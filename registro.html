@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMO 2026 — Control de Invitados y Asientos</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0f172a',
+                            900: '#0b1329',
+                            950: '#050a18',
+                        },
+                        gold: {
+                            400: '#f3c649',
+                            500: '#d4af37',
+                            600: '#aa820a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gold-gradient { background: linear-gradient(135deg, #f5d77f 0%, #d4af37 50%, #aa820a 100%); }
+        .gold-text {
+            background: linear-gradient(135deg, #f5d77f 0%, #d4af37 50%, #aa820a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-border { border-color: rgba(212, 175, 55, 0.4); }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(11, 19, 41, 0.6);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(5, 10, 24, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 3px; }
+    </style>
+</head>
+<body class="h-full text-slate-200 bg-navy-950 flex flex-col min-h-screen selection:bg-gold-500 selection:text-navy-950">
+
+    <!-- Header Section -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-slate-800/80 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('main')">
+                <div class="w-10 h-10 rounded-xl gold-gradient flex items-center justify-center text-navy-950 font-bold text-xl shadow-md shadow-gold-500/20">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                        PROMO <span class="gold-text">2026</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Control Inteligente de Invitados y Asientos</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <button onclick="openAdminAuthModal()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium border gold-border text-gold-400 hover:bg-gold-500/10 transition-all flex items-center space-x-2 shadow-sm">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span class="hidden sm:inline">Administración</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 flex flex-col space-y-6">
+
+        <!-- Banner & Quick Search Section -->
+        <div id="main-view" class="space-y-6">
+            <!-- Search & Filter Bar -->
+            <div class="glass-panel rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-800">
+                <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-1/2">
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </div>
+                        <input type="text" id="student-search-input" oninput="handleSearch(this.value)" placeholder="Buscar estudiante por nombre o apellido..." 
+                               class="w-full pl-10 pr-10 py-3 bg-navy-900/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-400 focus:outline-none focus:border-gold-500 focus:ring-1 focus:ring-gold-500 transition-all">
+                        <button id="clear-search-btn" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-white">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <!-- Status Filter Tabs -->
+                    <div class="flex items-center space-x-1.5 w-full md:w-auto bg-navy-900/80 p-1.5 rounded-xl border border-slate-800">
+                        <button onclick="setFilter('all')" id="filter-all" class="filter-tab flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-gold-500 text-navy-950 shadow-md">
+                            Todos
+                        </button>
+                        <button onclick="setFilter('pending')" id="filter-pending" class="filter-tab flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all">
+                            Pendientes
+                        </button>
+                        <button onclick="setFilter('attended')" id="filter-attended" class="filter-tab flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all">
+                            Ya Asistieron
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Selector Buttons -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button onclick="selectSection('A')" id="sec-btn-A" class="sec-selector-btn glass-panel p-4 rounded-2xl border transition-all text-left flex items-center justify-between group hover:border-gold-500/50">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-navy-900 border border-slate-700/80 flex items-center justify-center text-gold-400 font-bold text-lg group-hover:scale-105 transition-transform">
+                            A
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white group-hover:text-gold-400 transition-colors">SECCIÓN A</h3>
+                            <p class="text-xs text-slate-400"><span id="count-sec-a">30</span> Estudiantes</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-gold-400 transition-colors"></i>
+                </button>
+
+                <button onclick="selectSection('B')" id="sec-btn-B" class="sec-selector-btn glass-panel p-4 rounded-2xl border transition-all text-left flex items-center justify-between group hover:border-gold-500/50">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-navy-900 border border-slate-700/80 flex items-center justify-center text-gold-400 font-bold text-lg group-hover:scale-105 transition-transform">
+                            B
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white group-hover:text-gold-400 transition-colors">SECCIÓN B</h3>
+                            <p class="text-xs text-slate-400"><span id="count-sec-b">30</span> Estudiantes</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-gold-400 transition-colors"></i>
+                </button>
+
+                <button onclick="selectSection('C')" id="sec-btn-C" class="sec-selector-btn glass-panel p-4 rounded-2xl border transition-all text-left flex items-center justify-between group hover:border-gold-500/50">
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-12 h-12 rounded-xl bg-navy-900 border border-slate-700/80 flex items-center justify-center text-gold-400 font-bold text-lg group-hover:scale-105 transition-transform">
+                            C
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white group-hover:text-gold-400 transition-colors">SECCIÓN C</h3>
+                            <p class="text-xs text-slate-400"><span id="count-sec-c">30</span> Estudiantes</p>
+                        </div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-gold-400 transition-colors"></i>
+                </button>
+            </div>
+
+            <!-- Active List Title & Search Context Bar -->
+            <div class="flex items-center justify-between px-1">
+                <div class="flex items-center space-x-2">
+                    <h2 id="active-list-title" class="text-lg font-bold text-white">Estudiantes Registrados</h2>
+                    <span id="active-list-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">90 total</span>
+                </div>
+            </div>
+
+            <!-- Student List Grid -->
+            <div id="student-list-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated via JS -->
+            </div>
+
+            <!-- Empty State Container -->
+            <div id="empty-state" class="hidden glass-panel rounded-2xl p-12 text-center border border-slate-800 space-y-4">
+                <div class="w-16 h-16 rounded-full bg-slate-800/80 flex items-center justify-center mx-auto text-slate-400 text-2xl">
+                    <i class="fa-solid fa-user-slash"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-white">Sin coincidencias</h3>
+                    <p class="text-slate-400 text-sm max-w-md mx-auto mt-1">No encontramos ningún estudiante con ese criterio de búsqueda. Comprueba la escritura o selecciona una sección.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin View Container -->
+        <div id="admin-view" class="hidden space-y-6">
+            <!-- Admin Top Nav -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-slate-800">
+                <div>
+                    <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-gold-500/20 text-gold-400 border border-gold-500/30 uppercase tracking-wider">Panel Modulo</span>
+                    <h2 class="text-2xl font-bold text-white mt-1">Administración General</h2>
+                </div>
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <button onclick="confirmResetData()" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all flex items-center space-x-1.5">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>Restablecer Demo</span>
+                    </button>
+                    <button onclick="switchView('main')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-white hover:bg-slate-700 transition-all flex items-center space-x-2">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Volver a Inicio</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overview Key Metrics Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Estudiantes</p>
+                    <p id="adm-metric-students" class="text-2xl font-bold text-white mt-1">0</p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Asientos Creados</p>
+                    <p id="adm-metric-seats" class="text-2xl font-bold text-gold-400 mt-1">0</p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Asistentes Con Asiento</p>
+                    <p id="adm-metric-attended" class="text-2xl font-bold text-emerald-400 mt-1">0</p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Pendientes Asiento</p>
+                    <p id="adm-metric-pending" class="text-2xl font-bold text-amber-400 mt-1">0</p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Extra (Sin Asiento)</p>
+                    <p id="adm-metric-extras" class="text-2xl font-bold text-indigo-400 mt-1">0</p>
+                </div>
+                <div class="glass-panel p-4 rounded-xl border border-slate-800">
+                    <p class="text-xs text-slate-400 font-medium">Llegadas Confirmadas</p>
+                    <p id="adm-metric-arrivals" class="text-2xl font-bold text-cyan-400 mt-1">0</p>
+                </div>
+            </div>
+
+            <!-- Admin Filters and Table Container -->
+            <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+                <div class="p-4 border-b border-slate-800/80 flex flex-col md:flex-row gap-4 items-center justify-between bg-navy-900/60">
+                    <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                        <button onclick="setAdminFilter('all')" id="adm-filter-all" class="adm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-gold-500 text-navy-950">Todas Secciones</button>
+                        <button onclick="setAdminFilter('A')" id="adm-filter-A" class="adm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Sección A</button>
+                        <button onclick="setAdminFilter('B')" id="adm-filter-B" class="adm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Sección B</button>
+                        <button onclick="setAdminFilter('C')" id="adm-filter-C" class="adm-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 text-slate-300">Sección C</button>
+                    </div>
+
+                    <div class="flex items-center space-x-2 w-full md:w-auto">
+                        <input type="text" id="admin-search-input" oninput="renderAdminTables()" placeholder="Filtrar en administración..." class="w-full md:w-64 px-3 py-1.5 bg-navy-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-gold-500">
+                    </div>
+                </div>
+
+                <!-- Admin Tabs for Attendance Categorization -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-800">
+                    <!-- Attended Column -->
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+                                <i class="fa-solid fa-circle-check"></i> Ya Asistieron (<span id="adm-count-attended">0</span>)
+                            </h3>
+                        </div>
+                        <div class="max-h-[420px] overflow-y-auto custom-scrollbar space-y-2 pr-1" id="adm-table-attended">
+                            <!-- JS Populated -->
+                        </div>
+                    </div>
+
+                    <!-- Pending Column -->
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+                            <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2">
+                                <i class="fa-solid fa-clock"></i> Pendientes de Llegada (<span id="adm-count-pending">0</span>)
+                            </h3>
+                        </div>
+                        <div class="max-h-[420px] overflow-y-auto custom-scrollbar space-y-2 pr-1" id="adm-table-pending">
+                            <!-- JS Populated -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audit Activity Log -->
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-gold-400"></i> Registro de Actividades
+                    </h3>
+                    <span class="text-xs text-slate-500 font-mono">Modo Persistencia Local Activo</span>
+                </div>
+                <div id="activity-log-container" class="max-h-48 overflow-y-auto custom-scrollbar space-y-2 text-xs font-mono">
+                    <!-- Logs injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-navy-950 py-4 text-center text-xs text-slate-500">
+        <p>PROMO 2026 • Control de invitados • Beta</p>
+    </footer>
+
+    <!-- STUDENT DETAILS DRAWER/MODAL -->
+    <div id="student-modal" class="fixed inset-0 z-50 hidden bg-navy-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-2xl max-h-[90vh] rounded-2xl border border-slate-700/80 shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <!-- Modal Header -->
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-navy-900/80">
+                <div class="flex items-center space-x-3">
+                    <div id="modal-sec-badge" class="w-10 h-10 rounded-xl bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 font-bold text-lg">
+                        A
+                    </div>
+                    <div>
+                        <h3 id="modal-student-name" class="text-xl font-bold text-white">Nombre Estudiante</h3>
+                        <p id="modal-student-sec" class="text-xs text-slate-400">Sección A</p>
+                    </div>
+                </div>
+                <button onclick="closeStudentModal()" class="w-9 h-9 rounded-xl bg-slate-800/80 text-slate-400 hover:text-white flex items-center justify-center transition-all">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 flex-grow">
+                
+                <!-- Status Badge Banner -->
+                <div id="modal-status-banner" class="p-4 rounded-xl flex items-center justify-between border">
+                    <div class="flex items-center space-x-3">
+                        <i id="modal-status-icon" class="text-xl fa-solid fa-circle-info"></i>
+                        <div>
+                            <p class="text-xs uppercase tracking-wider font-semibold opacity-80">Estado de Asistencia</p>
+                            <p id="modal-status-text" class="font-bold text-base">Pendiente</p>
+                        </div>
+                    </div>
+                    <div id="modal-action-btn-wrapper">
+                        <!-- Replaced by JS -->
+                    </div>
+                </div>
+
+                <!-- Numbered Seated Guests Section -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-chair text-gold-400"></i> Invitados con Asiento (<span id="modal-seated-count">0</span>)
+                        </h4>
+                        <span class="text-xs text-slate-400">Numeración consecutiva global</span>
+                    </div>
+
+                    <div id="modal-seated-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <!-- Seated guest badges -->
+                    </div>
+                </div>
+
+                <!-- Unnumbered Extra Companions Section -->
+                <div class="space-y-3 pt-4 border-t border-slate-800">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-users text-indigo-400"></i> Acompañantes Adicionales
+                            </h4>
+                            <p class="text-xs text-slate-400">Ubicación: Parte posterior del salón (Sin asiento numerado)</p>
+                        </div>
+                        <button onclick="openAddExtraModal()" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-md shadow-indigo-600/20">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Agregar Extra</span>
+                        </button>
+                    </div>
+
+                    <div id="modal-extra-list" class="space-y-2">
+                        <!-- Extra guest rows -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-800 bg-navy-900/50 flex justify-end">
+                <button onclick="closeStudentModal()" class="px-5 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-200 hover:bg-slate-700 transition-all">
+                    Cerrar Ficha
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN AUTH PIN MODAL -->
+    <div id="admin-auth-modal" class="fixed inset-0 z-50 hidden bg-navy-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-2xl border border-slate-700 p-6 space-y-5 shadow-2xl">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-gold-500/10 border border-gold-500/30 text-gold-400 flex items-center justify-center mx-auto text-xl">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">Acceso a Administración</h3>
+                <p class="text-xs text-slate-400">Introduce el PIN de acceso para ingresar al panel principal.</p>
+            </div>
+
+            <div class="space-y-3">
+                <input type="password" id="admin-pin-input" placeholder="Ingresa PIN (Demo: 2060)" 
+                       class="w-full px-4 py-3 bg-navy-950 border border-slate-700 rounded-xl text-center text-lg font-mono text-white tracking-widest focus:outline-none focus:border-gold-500">
+                <p id="admin-pin-error" class="hidden text-xs text-red-400 text-center font-medium">Clave incorrecta. Inténtalo de nuevo.</p>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeAdminAuthModal()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-all">
+                    Cancelar
+                </button>
+                <button onclick="verifyAdminPin()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold gold-gradient text-navy-950 font-bold hover:brightness-110 transition-all shadow-md">
+                    Ingresar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD EXTRA COMPANION MODAL -->
+    <div id="add-extra-modal" class="fixed inset-0 z-50 hidden bg-navy-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-2xl border border-slate-700 p-6 space-y-5 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-indigo-400"></i> Agregar Acompañante Extra
+                </h3>
+                <button onclick="closeAddExtraModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div class="p-3 bg-indigo-950/40 border border-indigo-500/20 rounded-xl text-indigo-300">
+                    <p class="font-semibold mb-1"><i class="fa-solid fa-circle-info"></i> Ubicación Posterior</p>
+                    <p>Este acompañante NO consumirá ni asignará un número de asiento. Se registrará para la zona posterior del salón.</p>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-slate-300 font-medium">Nombre del Acompañante</label>
+                    <input type="text" id="extra-name-input" placeholder="Ej. Acompañante Extra 1" class="w-full px-3.5 py-2.5 bg-navy-950 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+            </div>
+
+            <div class="flex space-x-3">
+                <button onclick="closeAddExtraModal()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    Cancelar
+                </button>
+                <button onclick="submitAddExtra()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all">
+                    Guardar Acompañante
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden bg-navy-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-2xl border border-slate-700 p-6 space-y-4 text-center shadow-2xl">
+            <div id="confirm-icon-wrap" class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-circle-question"></i>
+            </div>
+            <h3 id="confirm-title" class="text-lg font-bold text-white">¿Confirmar Acción?</h3>
+            <p id="confirm-msg" class="text-xs text-slate-400">¿Estás seguro de proceder con esta operación?</p>
+
+            <div class="flex space-x-3 pt-2">
+                <button id="confirm-cancel-btn" onclick="closeConfirmModal()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    Cancelar
+                </button>
+                <button id="confirm-ok-btn" class="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-gold-500 text-navy-950 font-bold hover:brightness-110">
+                    Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APPLICATION LOGIC JavaScript -->
+    <script>
+        // --- DEMO INITIAL DATA GENERATOR ---
+        const firstNames = ["Juan", "María", "Carlos", "Andrea", "Daniel", "Sofía", "José", "Valeria", "Luis", "Camila", "Mateo", "Lucía", "Diego", "Paula", "Alejandro", "Fernanda", "Gabriel", "Mariana", "Lucas", "Elena", "Santiago", "Victoria", "Sebastian", "Natalia", "Samuel", "Isabella", "David", "Daniela", "Nicolas", "Ximena"];
+        const lastNames = ["Pérez", "González", "Méndez", "Castillo", "Ramírez", "Hernández", "Martínez", "Morales", "Fernández", "López", "García", "Rodríguez", "Sánchez", "Romero", "Torres", "Suárez", "Delgado", "Castro", "Ortiz", "Álvarez", "Ruiz", "Vargas", "Gómez", "Mendoza", "Aguilar", "Ríos", "Navarro", "Salazar", "Reyes", "Vásquez"];
+
+        const DEMO_STORAGE_KEY = "PROMO_2026_APP_DATA_V1";
+        const ADMIN_PIN = "2060";
+
+        let appData = {
+            students: [],
+            activityLog: []
+        };
+
+        let currentSectionFilter = 'ALL'; // 'ALL', 'A', 'B', 'C'
+        let currentStatusFilter = 'all';  // 'all', 'pending', 'attended'
+        let searchQuery = '';
+        let selectedStudentId = null;
+        let adminSectionFilter = 'all';
+
+        // --- APP INITIALIZATION ---
+        window.onload = function() {
+            loadInitialData();
+            renderApp();
+            logActivity("Sistema iniciado correctamente.");
+        };
+
+        function loadInitialData() {
+            const saved = localStorage.getItem(DEMO_STORAGE_KEY);
+            if (saved) {
+                try {
+                    appData = JSON.parse(saved);
+                    return;
+                } catch (e) {
+                    console.error("Error reading storage:", e);
+                }
+            }
+            // Generate 90 realistic unique students
+            generateMockData();
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(appData));
+        }
+
+        function generateMockData() {
+            appData.students = [];
+            appData.activityLog = [];
+
+            let globalSeatCounter = 1;
+            const sections = ['A', 'B', 'C'];
+            let studentCounter = 0;
+
+            sections.forEach(sec => {
+                for (let i = 0; i < 30; i++) {
+                    const fname = firstNames[(i + studentCounter) % firstNames.length];
+                    const lname = lastNames[(i * 3 + studentCounter) % lastNames.length];
+                    const fullName = `${fname} ${lname}`;
+                    
+                    // Assign varying seated guest counts (1 to 4)
+                    const seatedCount = (studentCounter % 4) + 1;
+                    const seats = [];
+
+                    for (let s = 0; s < seatedCount; s++) {
+                        const paddedSeat = String(globalSeatCounter).padStart(3, '0');
+                        seats.push({
+                            seatNumber: paddedSeat,
+                            attended: false
+                        });
+                        globalSeatCounter++;
+                    }
+
+                    // Extra unnumbered companions (0 to 2)
+                    const extras = [];
+                    if (studentCounter % 5 === 0) {
+                        extras.push({ id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), name: 'Acompañante extra 1', attended: false });
+                    }
+                    if (studentCounter % 9 === 0) {
+                        extras.push({ id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4), name: 'Acompañante extra 2', attended: false });
+                    }
+
+                    // Demo attendance status (some already attended)
+                    const isAttended = (studentCounter % 7 === 0 || studentCounter % 11 === 0);
+                    if (isAttended) {
+                        seats.forEach(st => st.attended = true);
+                        extras.forEach(ex => ex.attended = true);
+                    }
+
+                    appData.students.push({
+                        id: 'std_' + (studentCounter + 1),
+                        name: fullName,
+                        section: sec,
+                        seats: seats,
+                        extras: extras,
+                        attended: isAttended
+                    });
+
+                    studentCounter++;
+                }
+            });
+
+            logActivity("Datos de demostración inicializados con 90 estudiantes.");
+        }
+
+        function logActivity(actionMsg) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            appData.activityLog.unshift({
+                time: timeStr,
+                msg: actionMsg
+            });
+            if (appData.activityLog.length > 50) appData.activityLog.pop();
+            saveData();
+            renderActivityLog();
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderApp() {
+            renderSectionCounts();
+            renderStudentList();
+            renderAdminMetrics();
+            renderAdminTables();
+            renderActivityLog();
+        }
+
+        function renderSectionCounts() {
+            const countA = appData.students.filter(s => s.section === 'A').length;
+            const countB = appData.students.filter(s => s.section === 'B').length;
+            const countC = appData.students.filter(s => s.section === 'C').length;
+
+            document.getElementById('count-sec-a').textContent = countA;
+            document.getElementById('count-sec-b').textContent = countB;
+            document.getElementById('count-sec-c').textContent = countC;
+        }
+
+        function renderStudentList() {
+            const grid = document.getElementById('student-list-grid');
+            const emptyState = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            let filtered = appData.students.filter(student => {
+                // Section filter
+                if (currentSectionFilter !== 'ALL' && student.section !== currentSectionFilter) {
+                    return false;
+                }
+                // Status filter
+                if (currentStatusFilter === 'pending' && student.attended) return false;
+                if (currentStatusFilter === 'attended' && !student.attended) return false;
+
+                // Search query
+                if (searchQuery.trim() !== '') {
+                    const q = searchQuery.toLowerCase().trim();
+                    const nameMatch = student.name.toLowerCase().includes(q);
+                    return nameMatch;
+                }
+
+                return true;
+            });
+
+            // Update Header Badge
+            const badge = document.getElementById('active-list-badge');
+            const title = document.getElementById('active-list-title');
+
+            if (searchQuery.trim() !== '') {
+                title.textContent = `Resultados para "${searchQuery}"`;
+                badge.textContent = `${filtered.length} encontrados`;
+            } else if (currentSectionFilter !== 'ALL') {
+                title.textContent = `Estudiantes Sección ${currentSectionFilter}`;
+                badge.textContent = `${filtered.length} estudiantes`;
+            } else {
+                title.textContent = `Todos los Estudiantes`;
+                badge.textContent = `${filtered.length} estudiantes`;
+            }
+
+            if (filtered.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            filtered.forEach(student => {
+                const card = document.createElement('div');
+                card.className = `glass-card rounded-2xl p-4 border transition-all cursor-pointer flex flex-col justify-between hover:border-gold-500/60 hover:shadow-lg hover:shadow-gold-500/5 ${student.attended ? 'border-emerald-500/30' : 'border-slate-800'}`;
+                card.onclick = () => openStudentModal(student.id);
+
+                const seatBadges = student.seats.map(s => 
+                    `<span class="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold ${student.attended ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-gold-500/20 text-gold-400 border border-gold-500/30'}">ASIENTO ${s.seatNumber}</span>`
+                ).join(' ');
+
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">SECCIÓN ${student.section}</span>
+                                <h3 class="font-bold text-white text-base mt-1.5 leading-snug">${student.name}</h3>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 ${student.attended ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}">
+                                <i class="fa-solid ${student.attended ? 'fa-circle-check' : 'fa-clock'} text-[10px]"></i>
+                                ${student.attended ? 'Asistió' : 'Pendiente'}
+                            </span>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <p class="text-xs text-slate-400 font-medium flex items-center justify-between">
+                                <span>Invitados con asiento:</span>
+                                <strong class="text-white">${student.seats.length}</strong>
+                            </p>
+                            <div class="flex flex-wrap gap-1">
+                                ${seatBadges}
+                            </div>
+                        </div>
+
+                        ${student.extras.length > 0 ? `
+                            <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-indigo-300">
+                                <span><i class="fa-solid fa-users text-xs"></i> Extras (sin asiento):</span>
+                                <strong class="font-bold">${student.extras.length}</strong>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-gold-400 font-semibold group-hover:underline">
+                        <span>Ver Ficha Completa</span>
+                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // --- NAVIGATION & FILTERS ---
+        function selectSection(sec) {
+            currentSectionFilter = sec;
+            document.querySelectorAll('.sec-selector-btn').forEach(btn => {
+                btn.classList.remove('border-gold-500', 'bg-navy-900/90');
+            });
+
+            if (sec !== 'ALL') {
+                const activeBtn = document.getElementById(`sec-btn-${sec}`);
+                if (activeBtn) activeBtn.classList.add('border-gold-500', 'bg-navy-900/90');
+            }
+
+            renderStudentList();
+        }
+
+        function setFilter(status) {
+            currentStatusFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('bg-gold-500', 'text-navy-950', 'shadow-md');
+                tab.classList.add('text-slate-300');
+            });
+
+            const active = document.getElementById(`filter-${status}`);
+            if (active) {
+                active.classList.add('bg-gold-500', 'text-navy-950', 'shadow-md');
+                active.classList.remove('text-slate-300');
+            }
+
+            renderStudentList();
+        }
+
+        function handleSearch(val) {
+            searchQuery = val;
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (val.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderStudentList();
+        }
+
+        function clearSearch() {
+            document.getElementById('student-search-input').value = '';
+            handleSearch('');
+        }
+
+        function switchView(viewName) {
+            const mainView = document.getElementById('main-view');
+            const adminView = document.getElementById('admin-view');
+
+            if (viewName === 'admin') {
+                mainView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+            } else {
+                adminView.classList.add('hidden');
+                mainView.classList.remove('hidden');
+            }
+        }
+
+        // --- STUDENT MODAL & ACTIONS ---
+        function openStudentModal(id) {
+            selectedStudentId = id;
+            const student = appData.students.find(s => s.id === id);
+            if (!student) return;
+
+            document.getElementById('modal-student-name').textContent = student.name;
+            document.getElementById('modal-student-sec').textContent = `Sección ${student.section}`;
+            document.getElementById('modal-sec-badge').textContent = student.section;
+
+            // Status Banner
+            const banner = document.getElementById('modal-status-banner');
+            const icon = document.getElementById('modal-status-icon');
+            const text = document.getElementById('modal-status-text');
+            const btnWrap = document.getElementById('modal-action-btn-wrapper');
+
+            if (student.attended) {
+                banner.className = "p-4 rounded-xl flex items-center justify-between border bg-emerald-950/40 border-emerald-500/40 text-emerald-300";
+                icon.className = "text-xl fa-solid fa-circle-check text-emerald-400";
+                text.textContent = "LLEGADA REGISTRADA (ASISTIÓ)";
+
+                btnWrap.innerHTML = `
+                    <button onclick="confirmToggleAttendance('${student.id}')" class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all border border-slate-700 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-arrow-rotate-left"></i>
+                        <span>Corregir Asistencia</span>
+                    </button>
+                `;
+            } else {
+                banner.className = "p-4 rounded-xl flex items-center justify-between border bg-amber-950/40 border-amber-500/40 text-amber-300";
+                icon.className = "text-xl fa-solid fa-clock text-amber-400";
+                text.textContent = "ASISTENCIA PENDIENTE";
+
+                btnWrap.innerHTML = `
+                    <button onclick="confirmToggleAttendance('${student.id}')" class="px-4 py-2.5 rounded-xl text-xs font-bold gold-gradient text-navy-950 hover:brightness-110 transition-all shadow-md flex items-center space-x-1.5">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Registrar Llegada</span>
+                    </button>
+                `;
+            }
+
+            // Seated Guests List
+            document.getElementById('modal-seated-count').textContent = student.seats.length;
+            const seatedList = document.getElementById('modal-seated-list');
+            seatedList.innerHTML = '';
+
+            student.seats.forEach((seat, idx) => {
+                const item = document.createElement('div');
+                item.className = "glass-panel p-3 rounded-xl border border-slate-800 flex items-center justify-between";
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3">
+                        <div class="px-2.5 py-1 rounded-lg bg-gold-500/20 text-gold-400 border border-gold-500/40 font-mono font-bold text-xs">
+                            ASIENTO ${seat.seatNumber}
+                        </div>
+                        <span class="text-xs text-slate-300 font-medium">Invitado ${idx + 1}</span>
+                    </div>
+                    <span class="text-[11px] font-semibold ${seat.attended ? 'text-emerald-400' : 'text-slate-500'}">
+                        ${seat.attended ? ' Asistió' : 'Pendiente'}
+                    </span>
+                `;
+                seatedList.appendChild(item);
+            });
+
+            // Extra Unnumbered Companions List
+            const extraList = document.getElementById('modal-extra-list');
+            extraList.innerHTML = '';
+
+            if (student.extras.length === 0) {
+                extraList.innerHTML = `<p class="text-xs text-slate-500 italic py-2">No hay acompañantes adicionales registrados.</p>`;
+            } else {
+                student.extras.forEach(ex => {
+                    const exRow = document.createElement('div');
+                    exRow.className = "glass-panel p-3 rounded-xl border border-slate-800 flex items-center justify-between";
+                    exRow.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-user-tag text-indigo-400 text-xs"></i>
+                            <div>
+                                <p class="text-xs font-bold text-slate-200">${ex.name}</p>
+                                <p class="text-[10px] text-slate-400">Sin asiento numerado (Zona posterior)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[11px] font-semibold ${ex.attended ? 'text-emerald-400' : 'text-slate-500'}">
+                                ${ex.attended ? 'Asistió' : 'Pendiente'}
+                            </span>
+                            <button onclick="removeExtraCompanion('${student.id}', '${ex.id}')" class="text-slate-500 hover:text-red-400 p-1 text-xs">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    extraList.appendChild(exRow);
+                });
+            }
+
+            document.getElementById('student-modal').classList.remove('hidden');
+        }
+
+        function closeStudentModal() {
+            document.getElementById('student-modal').classList.add('hidden');
+            selectedStudentId = null;
+        }
+
+        function confirmToggleAttendance(studentId) {
+            const student = appData.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            if (student.attended) {
+                showConfirmModal(
+                    "fa-circle-exclamation",
+                    "¿Corregir Asistencia?",
+                    `¿Deseas revertir la llegada de los invitados de ${student.name}? El estado volverá a Pendiente.`,
+                    () => executeToggleAttendance(studentId)
+                );
+            } else {
+                showConfirmModal(
+                    "fa-circle-check",
+                    "¿Confirmar Llegada?",
+                    `¿Confirmas la llegada de los invitados de ${student.name}? Todos los asientos asignados cambiarán a "Asistió".`,
+                    () => executeToggleAttendance(studentId)
+                );
+            }
+        }
+
+        function executeToggleAttendance(studentId) {
+            const student = appData.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            student.attended = !student.attended;
+            // Sync all seated guest states
+            student.seats.forEach(s => s.attended = student.attended);
+            // Sync extra companions if checking in
+            if (student.attended) {
+                student.extras.forEach(ex => ex.attended = true);
+            }
+
+            saveData();
+            logActivity(`${student.attended ? 'Se registró la llegada de' : 'Se corrigió la asistencia de'} ${student.name}.`);
+            
+            renderApp();
+            openStudentModal(studentId); // Refresh modal view
+            closeConfirmModal();
+        }
+
+        // --- EXTRA UNNUMBERED GUESTS LOGIC ---
+        function openAddExtraModal() {
+            document.getElementById('extra-name-input').value = '';
+            document.getElementById('add-extra-modal').classList.remove('hidden');
+        }
+
+        function closeAddExtraModal() {
+            document.getElementById('add-extra-modal').classList.add('hidden');
+        }
+
+        function submitAddExtra() {
+            if (!selectedStudentId) return;
+            const student = appData.students.find(s => s.id === selectedStudentId);
+            if (!student) return;
+
+            let nameInput = document.getElementById('extra-name-input').value.trim();
+            if (!nameInput) {
+                nameInput = `Acompañante extra ${student.extras.length + 1}`;
+            }
+
+            const newExtra = {
+                id: 'ext_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                name: nameInput,
+                attended: student.attended // Inherit student's current attendance
+            };
+
+            student.extras.push(newExtra);
+            saveData();
+            logActivity(`Se agregó un acompañante extra (${nameInput}) a ${student.name}.`);
+
+            closeAddExtraModal();
+            renderApp();
+            openStudentModal(selectedStudentId);
+        }
+
+        function removeExtraCompanion(studentId, extraId) {
+            const student = appData.students.find(s => s.id === studentId);
+            if (!student) return;
+
+            student.extras = student.extras.filter(ex => ex.id !== extraId);
+            saveData();
+            logActivity(`Se eliminó un acompañante extra de ${student.name}.`);
+
+            renderApp();
+            openStudentModal(studentId);
+        }
+
+        // --- ADMIN AUTH & DASHBOARD ---
+        function openAdminAuthModal() {
+            document.getElementById('admin-pin-input').value = '';
+            document.getElementById('admin-pin-error').classList.add('hidden');
+            document.getElementById('admin-auth-modal').classList.remove('hidden');
+        }
+
+        function closeAdminAuthModal() {
+            document.getElementById('admin-auth-modal').classList.add('hidden');
+        }
+
+        function verifyAdminPin() {
+            const pin = document.getElementById('admin-pin-input').value.trim();
+            if (pin === ADMIN_PIN) {
+                closeAdminAuthModal();
+                switchView('admin');
+                logActivity("Acceso concedido al Panel de Administración.");
+            } else {
+                document.getElementById('admin-pin-error').classList.remove('hidden');
+            }
+        }
+
+        function setAdminFilter(sec) {
+            adminSectionFilter = sec;
+            document.querySelectorAll('.adm-filter-btn').forEach(btn => {
+                btn.classList.remove('bg-gold-500', 'text-navy-950');
+                btn.classList.add('bg-slate-800', 'text-slate-300');
+            });
+
+            const active = document.getElementById(`adm-filter-${sec}`);
+            if (active) {
+                active.classList.add('bg-gold-500', 'text-navy-950');
+                active.classList.remove('bg-slate-800', 'text-slate-300');
+            }
+
+            renderAdminTables();
+        }
+
+        function renderAdminMetrics() {
+            const totalStudents = appData.students.length;
+            let totalSeats = 0;
+            let attendedSeats = 0;
+            let pendingSeats = 0;
+            let totalExtras = 0;
+            let totalArrivals = 0;
+
+            appData.students.forEach(st => {
+                totalSeats += st.seats.length;
+                totalExtras += st.extras.length;
+                if (st.attended) totalArrivals++;
+
+                st.seats.forEach(s => {
+                    if (s.attended) attendedSeats++;
+                    else pendingSeats++;
+                });
+            });
+
+            document.getElementById('adm-metric-students').textContent = totalStudents;
+            document.getElementById('adm-metric-seats').textContent = totalSeats;
+            document.getElementById('adm-metric-attended').textContent = attendedSeats;
+            document.getElementById('adm-metric-pending').textContent = pendingSeats;
+            document.getElementById('adm-metric-extras').textContent = totalExtras;
+            document.getElementById('adm-metric-arrivals').textContent = totalArrivals;
+        }
+
+        function renderAdminTables() {
+            const attendedContainer = document.getElementById('adm-table-attended');
+            const pendingContainer = document.getElementById('adm-table-pending');
+            const filterQuery = document.getElementById('admin-search-input').value.toLowerCase().trim();
+
+            attendedContainer.innerHTML = '';
+            pendingContainer.innerHTML = '';
+
+            let attendedList = [];
+            let pendingList = [];
+
+            appData.students.forEach(student => {
+                if (adminSectionFilter !== 'all' && student.section !== adminSectionFilter) return;
+                if (filterQuery && !student.name.toLowerCase().includes(filterQuery)) return;
+
+                if (student.attended) {
+                    attendedList.push(student);
+                } else {
+                    pendingList.push(student);
+                }
+            });
+
+            document.getElementById('adm-count-attended').textContent = attendedList.length;
+            document.getElementById('adm-count-pending').textContent = pendingList.length;
+
+            // Render Attended Rows
+            if (attendedList.length === 0) {
+                attendedContainer.innerHTML = `<p class="text-xs text-slate-500 py-3 text-center">No hay registros en esta categoría.</p>`;
+            } else {
+                attendedList.forEach(st => {
+                    const seatsStr = st.seats.map(s => s.seatNumber).join(', ');
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl bg-navy-950/80 border border-slate-800 flex items-center justify-between text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-white">${st.name}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">SEC ${st.section}</span>
+                            </div>
+                            <p class="text-slate-400 text-[11px] mt-0.5">Asientos: <span class="text-gold-400 font-mono">${seatsStr}</span> ${st.extras.length > 0 ? `• Extra: ${st.extras.length}` : ''}</p>
+                        </div>
+                        <button onclick="openStudentModal('${st.id}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">
+                            Ficha
+                        </button>
+                    `;
+                    attendedContainer.appendChild(item);
+                });
+            }
+
+            // Render Pending Rows
+            if (pendingList.length === 0) {
+                pendingContainer.innerHTML = `<p class="text-xs text-slate-500 py-3 text-center">No hay registros pendientes.</p>`;
+            } else {
+                pendingList.forEach(st => {
+                    const seatsStr = st.seats.map(s => s.seatNumber).join(', ');
+                    const item = document.createElement('div');
+                    item.className = "p-3 rounded-xl bg-navy-950/80 border border-slate-800 flex items-center justify-between text-xs";
+                    item.innerHTML = `
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-white">${st.name}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">SEC ${st.section}</span>
+                            </div>
+                            <p class="text-slate-400 text-[11px] mt-0.5">Asientos: <span class="text-gold-400 font-mono">${seatsStr}</span> ${st.extras.length > 0 ? `• Extra: ${st.extras.length}` : ''}</p>
+                        </div>
+                        <button onclick="openStudentModal('${st.id}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">
+                            Ficha
+                        </button>
+                    `;
+                    pendingContainer.appendChild(item);
+                });
+            }
+        }
+
+        function renderActivityLog() {
+            const container = document.getElementById('activity-log-container');
+            if (!container) return;
+
+            container.innerHTML = '';
+            if (!appData.activityLog || appData.activityLog.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 italic">Sin actividad registrada.</p>`;
+                return;
+            }
+
+            appData.activityLog.forEach(log => {
+                const item = document.createElement('div');
+                item.className = "flex items-start space-x-2 text-slate-400";
+                item.innerHTML = `
+                    <span class="text-gold-500/80 font-bold">[${log.time}]</span>
+                    <span>${log.msg}</span>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function confirmResetData() {
+            showConfirmModal(
+                "fa-triangle-exclamation",
+                "¿Restablecer Datos Demo?",
+                "Esta acción reiniciará los 90 estudiantes ficticios a su estado original y borrará las modificaciones locales.",
+                () => {
+                    localStorage.removeItem(DEMO_STORAGE_KEY);
+                    generateMockData();
+                    saveData();
+                    renderApp();
+                    closeConfirmModal();
+                    logActivity("Se restablecieron todos los datos de demostración.");
+                }
+            );
+        }
+
+        // --- GENERIC CONFIRMATION MODAL UTILITY ---
+        let confirmActionHandler = null;
+
+        function showConfirmModal(iconClass, title, message, onConfirm) {
+            document.getElementById('confirm-icon-wrap').innerHTML = `<i class="fa-solid ${iconClass}"></i>`;
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-msg').textContent = message;
+
+            confirmActionHandler = onConfirm;
+            const okBtn = document.getElementById('confirm-ok-btn');
+            okBtn.onclick = () => {
+                if (confirmActionHandler) confirmActionHandler();
+            };
+
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            confirmActionHandler = null;
+        }
+    </script>
+</body>
+</html>
